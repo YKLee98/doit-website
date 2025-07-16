@@ -4,6 +4,11 @@ const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6lKSN6Tp5Rs
 // 전역 변수
 let isSubmitting = false;
 
+// JSONP 콜백 함수들
+window.handleLoginResponse = null;
+window.handleRegisterResponse = null;
+window.handleEmailCheckResponse = null;
+
 // 페이지 로드 시 실행
 document.addEventListener('DOMContentLoaded', function() {
     // 현재 페이지 확인
@@ -50,6 +55,48 @@ function formatPhoneNumber(e) {
     }
 }
 
+// JSONP 요청 함수
+function jsonpRequest(params, callbackName) {
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        const callbackFn = `callback_${Date.now()}`;
+        
+        // 전역 콜백 함수 설정
+        window[callbackFn] = function(data) {
+            resolve(data);
+            // 스크립트 태그 제거
+            document.body.removeChild(script);
+            delete window[callbackFn];
+        };
+        
+        // URL 파라미터 생성
+        const url = new URL(GOOGLE_SCRIPT_URL);
+        Object.keys(params).forEach(key => {
+            url.searchParams.append(key, params[key]);
+        });
+        url.searchParams.append('callback', callbackFn);
+        
+        // 스크립트 태그 추가
+        script.src = url.toString();
+        script.onerror = () => {
+            reject(new Error('JSONP request failed'));
+            document.body.removeChild(script);
+            delete window[callbackFn];
+        };
+        
+        document.body.appendChild(script);
+        
+        // 타임아웃 설정 (10초)
+        setTimeout(() => {
+            if (window[callbackFn]) {
+                reject(new Error('Request timeout'));
+                document.body.removeChild(script);
+                delete window[callbackFn];
+            }
+        }, 10000);
+    });
+}
+
 // 이메일 중복 확인
 async function checkEmailDuplicate() {
     const email = document.getElementById('email').value.trim();
@@ -58,15 +105,10 @@ async function checkEmailDuplicate() {
     if (!email || !validateEmail(email)) return;
     
     try {
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: `action=checkEmail&email=${encodeURIComponent(email)}`
+        const result = await jsonpRequest({
+            action: 'checkEmail',
+            email: email
         });
-        
-        const result = await response.json();
         
         if (result.exists) {
             showError('emailError', result.message);
@@ -109,15 +151,13 @@ async function handleFormSubmit(e) {
     submitButton.disabled = true;
     
     try {
-        const response = await fetch(GOOGLE_SCRIPT_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/x-www-form-urlencoded',
-            },
-            body: buildRequestBody(formData, isRegisterPage)
-        });
+        // JSONP 요청 파라미터 준비
+        const params = {
+            action: isRegisterPage ? 'register' : 'login',
+            ...formData
+        };
         
-        const result = await response.json();
+        const result = await jsonpRequest(params);
         
         if (result.success) {
             handleSuccess(result, isRegisterPage);
@@ -146,18 +186,6 @@ function getFormData(isRegisterPage) {
     }
     
     return data;
-}
-
-// 요청 본문 생성
-function buildRequestBody(formData, isRegisterPage) {
-    const params = new URLSearchParams();
-    params.append('action', isRegisterPage ? 'register' : 'login');
-    
-    Object.keys(formData).forEach(key => {
-        params.append(key, formData[key]);
-    });
-    
-    return params.toString();
 }
 
 // 유효성 검사
@@ -205,7 +233,7 @@ function handleSuccess(result, isRegisterPage) {
         document.getElementById('registerForm').style.display = 'none';
         
         setTimeout(() => {
-            window.location.href = '?path=login';
+            window.location.href = 'index.html';
         }, 2000);
     } else {
         successMessage.textContent = '로그인 성공! 잠시 후 이동합니다...';
