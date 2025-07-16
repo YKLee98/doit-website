@@ -1,5 +1,5 @@
 // 설정
-const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwhvUhWfn1hrhNfEjN0hQYXD8xn9zA-YpA83FhdbuWdrded3uXXeftloBOZ9wrWqhQ-/exec';
+const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbx6lKSN6Tp5Rsb55d4jyc4mJwmscEI1e-F7pJyjVccLLwEFbasXoXHnzav6XlcNJHa2/exec';
 
 // 전역 변수
 let isSubmitting = false;
