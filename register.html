@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DoIT - 회원가입</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="register-container">
+        <div class="logo">
+            <h1>DoIT</h1>
+            <p>신규 강사 회원가입</p>
+        </div>
+        
+        <div class="info-message">
+            회원가입 후 관리자 승인이 필요합니다.<br>
+            가입 시 기본 권한은 '강사'로 설정됩니다.
+        </div>
+        
+        <div class="success-message" id="successMessage"></div>
+        
+        <form id="registerForm">
+            <div class="form-group">
+                <label for="name">이름 <span class="required">*</span></label>
+                <input 
+                    type="text" 
+                    id="name" 
+                    name="name" 
+                    placeholder="실명을 입력하세요" 
+                    required 
+                    autocomplete="name"
+                >
+                <div class="error-message" id="nameError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="phone">휴대폰 번호 <span class="required">*</span></label>
+                <input 
+                    type="tel" 
+                    id="phone" 
+                    name="phone" 
+                    placeholder="010-0000-0000" 
+                    required 
+                    autocomplete="tel" 
+                    maxlength="13"
+                >
+                <div class="error-message" id="phoneError"></div>
+            </div>
+            
+            <div class="form-group">
+                <label for="email">이메일 주소 <span class="required">*</span></label>
+                <input 
+                    type="email" 
+                    id="email" 
+                    name="email" 
+                    placeholder="example@email.com" 
+                    required 
+                    autocomplete="email"
+                >
+                <div class="error-message" id="emailError"></div>
+            </div>
+            
+            <button type="submit" class="submit-button" id="submitButton">
+                회원가입
+            </button>
+        </form>
+        
+        <div class="login-link">
+            이미 계정이 있으신가요? <a href="index.html">로그인</a>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
